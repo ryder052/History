@@ -281,6 +281,7 @@ Because we actually used submethods with `HISTORY_PUSH`, now we can simply unwin
 The rule is: **Either unwind the whole substack using XXX_Undo methods, OR don't use XXX_Undo at all**. No middle ground, or it will break.
 
 ## Summary
+- History::SetContext() first ;)
 - `HISTORY_PUSH` creates a record on the undo stack
 - **Call `HISTORY_POP` at the beginning of each Undo function**
 - Use `HISTORY_SAVE` and `HISORY_LOAD` to store custom mementos
