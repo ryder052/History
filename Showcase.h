@@ -14,7 +14,7 @@ struct ManagerBase
     HistoryContext context;
 };
 
-struct Manager : ManagerBase
+struct TrivialManager : ManagerBase
 {
     std::vector<int> objects;
 
@@ -22,7 +22,7 @@ struct Manager : ManagerBase
     bool AddNewObject_Undo();
 };
 
-struct Manager2 : ManagerBase
+struct MapManager : ManagerBase
 {
     std::map<std::string, int> objects;
 
@@ -30,13 +30,13 @@ struct Manager2 : ManagerBase
     bool AddObject_Undo(const std::string& key, int value = 0);
 };
 
-struct Manager3 : Manager2
+struct MapWithRemoveManager : MapManager
 {
     bool RemoveObject(const std::string& key);
     bool RemoveObject_Undo(const std::string& key);
 };
 
-struct Manager4 : ManagerBase
+struct MergingManager : ManagerBase
 {
     std::map<std::string, std::set<int>> objects;
 

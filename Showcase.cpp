@@ -10,7 +10,7 @@ ManagerBase::ManagerBase()
 /// /////////////////////////////////////////////////////////////////////////////////
 ///
 
-bool Manager::AddNewObject()
+bool TrivialManager::AddNewObject()
 {
     // Trivial registration
     HISTORY_PUSH(AddNewObject);
@@ -18,8 +18,9 @@ bool Manager::AddNewObject()
     return true;
 }
 
-bool Manager::AddNewObject_Undo()
+bool TrivialManager::AddNewObject_Undo()
 {
+    // WARNING: Always call this first in all Undo functions!!!
     HISTORY_POP();
     objects.pop_back();
     return true;
@@ -27,7 +28,7 @@ bool Manager::AddNewObject_Undo()
 
 void HistoryShowcase_Basics()
 {
-    Manager mgr;
+    TrivialManager mgr;
     mgr.AddNewObject();
 
     assert(mgr.objects.size() == 1);
@@ -41,7 +42,7 @@ void HistoryShowcase_Basics()
 /// /////////////////////////////////////////////////////////////////////////////////
 ///
 
-bool Manager2::AddObject(const std::string& key, int value)
+bool MapManager::AddObject(const std::string& key, int value)
 {
     if (objects.find(key) != objects.end())
         return false;
@@ -53,9 +54,8 @@ bool Manager2::AddObject(const std::string& key, int value)
     return true;
 }
 
-bool Manager2::AddObject_Undo(const std::string& key, int /*unused*/)
+bool MapManager::AddObject_Undo(const std::string& key, int /*unused*/)
 {
-    // WARNING: Always call this first in all Undo functions!!!
     HISTORY_POP();
 
     objects.erase(key);
@@ -64,7 +64,7 @@ bool Manager2::AddObject_Undo(const std::string& key, int /*unused*/)
 
 void HistoryShowcase_InlineParams()
 {
-    Manager2 mgr;
+    MapManager mgr;
     mgr.AddObject("foo", 11);
 
     assert(mgr.objects.size() == 1 && mgr.objects["foo"] == 11);
@@ -78,7 +78,7 @@ void HistoryShowcase_InlineParams()
 /// /////////////////////////////////////////////////////////////////////////////////
 ///
 
-bool Manager3::RemoveObject(const std::string& key)
+bool MapWithRemoveManager::RemoveObject(const std::string& key)
 {
     HISTORY_PUSH(RemoveObject, key);
 
@@ -91,7 +91,7 @@ bool Manager3::RemoveObject(const std::string& key)
     return true;
 }
 
-bool Manager3::RemoveObject_Undo(const std::string& key)
+bool MapWithRemoveManager::RemoveObject_Undo(const std::string& key)
 {
     HISTORY_POP();
 
@@ -105,7 +105,7 @@ bool Manager3::RemoveObject_Undo(const std::string& key)
 
 void HistoryShowcase_UserParams()
 {
-    Manager3 mgr;
+    MapWithRemoveManager mgr;
     mgr.AddObject("foo", 11);
     mgr.RemoveObject("foo");
 
@@ -120,7 +120,7 @@ void HistoryShowcase_UserParams()
 /// /////////////////////////////////////////////////////////////////////////////////
 ///
 
-bool Manager4::SetObject(const std::string& key, const std::set<int>& values)
+bool MergingManager::SetObject(const std::string& key, const std::set<int>& values)
 {
     HISTORY_PUSH(SetObject, key, values);
 
@@ -135,7 +135,7 @@ bool Manager4::SetObject(const std::string& key, const std::set<int>& values)
     return true;
 }
 
-bool Manager4::SetObject_Undo(const std::string& key, const std::set<int>& /*unused*/)
+bool MergingManager::SetObject_Undo(const std::string& key, const std::set<int>& /*unused*/)
 {
     HISTORY_POP();
 
@@ -154,7 +154,7 @@ bool Manager4::SetObject_Undo(const std::string& key, const std::set<int>& /*unu
     return true;
 }
 
-bool Manager4::RemoveObject(const std::string& key)
+bool MergingManager::RemoveObject(const std::string& key)
 {
     HISTORY_PUSH(RemoveObject, key);
 
@@ -165,7 +165,7 @@ bool Manager4::RemoveObject(const std::string& key)
     return true;
 }
 
-bool Manager4::RemoveObject_Undo(const std::string& key)
+bool MergingManager::RemoveObject_Undo(const std::string& key)
 {
     HISTORY_POP();
 
@@ -176,7 +176,7 @@ bool Manager4::RemoveObject_Undo(const std::string& key)
     return true;
 }
 
-bool Manager4::MergeObjects(const std::set<std::string>& keys, const std::string& newKey)
+bool MergingManager::MergeObjects(const std::set<std::string>& keys, const std::string& newKey)
 {
     HISTORY_PUSH(MergeObjects, keys, newKey);
     std::set<int> hNewValues;
@@ -200,7 +200,7 @@ bool Manager4::MergeObjects(const std::set<std::string>& keys, const std::string
     return true;
 }
 
-bool Manager4::MergeObjects_Undo(const std::set<std::string>& keys, const std::string& newKey)
+bool MergingManager::MergeObjects_Undo(const std::set<std::string>& keys, const std::string& newKey)
 {
     HISTORY_POP();
 
@@ -218,7 +218,7 @@ bool Manager4::MergeObjects_Undo(const std::set<std::string>& keys, const std::s
 
 void HistoryShowcase_Advanced()
 {
-    Manager4 mgr;
+    MergingManager mgr;
     mgr.SetObject("foo", {11, 23, 49});
     mgr.SetObject("bar", {7, 8, 23});
     mgr.MergeObjects({ "foo", "bar" }, "foobar");
