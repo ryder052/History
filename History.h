@@ -91,6 +91,9 @@ struct HistoryContext
     // Bind delegate to fire when the stack changes.
     void BindOnStackChanged(const std::function<void(int)>& func);
 
+    // Unbind delegate on stack changes
+    void UnbindOnStackChanged();
+
     // Wipe the stack.
     void Clear();
 

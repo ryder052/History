@@ -168,7 +168,7 @@ std::string HistoryContext::Dump(int indentCount /*=0*/) const
     for (int i = 0; i < indentCount; ++i)
         tabs += '\t';
 
-    for (int i = m_HistoryStack.size() - 1; i > 0; --i)
+    for (int i = int(m_HistoryStack.size()) - 1; i > 0; --i)
     {
         std::string record = tabs + m_HistoryStack[i]->m_Label;
         if (m_PresentHistoryIdx == i)
@@ -200,6 +200,11 @@ void HistoryContext::BindOnStackChanged(const std::function<void(int)>& func)
         return;
 
     m_OnStackChanged = func;
+}
+
+void HistoryContext::UnbindOnStackChanged()
+{
+    m_OnStackChanged = [](int) {};
 }
 
 void HistoryContext::Clear()
