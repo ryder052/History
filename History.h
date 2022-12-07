@@ -239,7 +239,7 @@ struct HistoryWithParams : History
         : History(parentContext, name)
         , m_DoFunc(d)
         , m_UndoFunc(ud)
-        , m_Params(std::make_tuple(args...))
+        , m_Params(std::make_tuple(std::move(args)...))
     {
     }
 
