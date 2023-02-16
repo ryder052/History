@@ -31,7 +31,8 @@
 #include <mutex>
 #include <cassert>
 
-#define DelegateType std::function<bool(Args...)>
+template<typename... Args>
+using DelegateType = std::function<bool(Args...)>;
 
 struct History;
 
@@ -72,7 +73,7 @@ struct HistoryContext
     // @param undo_func: Delegate for Undo operations.
     // @params args: Do / Undo function arguments to store and reuse.
     template<typename... Args>
-    void Push(const std::string& name, DelegateType&& do_func, DelegateType&& undo_func, const std::decay_t<Args>&... args)
+    void Push(const std::string& name, DelegateType<Args...>&& do_func, DelegateType<Args...>&& undo_func, const std::decay_t<Args>&... args)
     {
         if (History::s_Lock)
             return;
@@ -82,7 +83,7 @@ struct HistoryContext
             return;
 
         PrePush();
-        m_HistoryStack.emplace_back(new HistoryWithParams<Args...>(this, name, std::forward<DelegateType>(do_func), std::forward<DelegateType>(undo_func), args...));
+        m_HistoryStack.push_back(new HistoryWithParams<Args...>(this, name, std::forward<DelegateType<Args...>>(do_func), std::forward<DelegateType<Args...>>(undo_func), args...));
     }
 
     // Use to remove the most recently created History object.
@@ -234,8 +235,7 @@ struct HistoryWithParams : History
     using TupleType = std::tuple<std::decay_t<Args>...>;
     constexpr static size_t TupleSize = std::tuple_size_v<TupleType>;
 
-    template<typename... ArgTypes>
-    HistoryWithParams(HistoryContext* parentContext, const std::string& name, DelegateType&& d, DelegateType&& ud, ArgTypes... args)
+    HistoryWithParams(HistoryContext* parentContext, const std::string& name, DelegateType<Args...>&& d, DelegateType<Args...>&& ud, Args... args)
         : History(parentContext, name)
         , m_DoFunc(d)
         , m_UndoFunc(ud)
@@ -244,8 +244,8 @@ struct HistoryWithParams : History
     }
 
     TupleType m_Params;
-    DelegateType m_DoFunc;
-    DelegateType m_UndoFunc;
+    DelegateType<Args...> m_DoFunc;
+    DelegateType<Args...> m_UndoFunc;
 
 protected:
     // Redo implementation. Calls m_DoFunc with all stored parameters.
@@ -261,7 +261,7 @@ protected:
     }
 
     template<std::size_t... I>
-    bool Call(const DelegateType& func, const std::index_sequence<I...>& idxSeq)
+    bool Call(const DelegateType<Args...>& func, const std::index_sequence<I...>& idxSeq)
     {
         return func(std::get<I>(m_Params)...);
     }
